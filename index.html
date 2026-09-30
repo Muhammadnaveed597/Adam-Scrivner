@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Private LinkedIn Audit | Adam Scrivner</title>
+<style>
+  :root{
+    --navy:#0b1f4b;
+    --navy-2:#12295e;
+    --ink:#16213a;
+    --paper:#f7f4ee;
+    --card:#ffffff;
+    --teal:#1e9e8a;
+    --teal-soft:#e3f2ef;
+    --gold:#c8a24a;
+    --muted:#5c6577;
+    --line:#e6e1d6;
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .progress{position:fixed;top:0;left:0;height:3px;background:var(--teal);width:0;z-index:1000;transition:width .15s ease}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:900;background:rgba(247,244,238,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px;overflow-x:auto;scrollbar-width:none}
+  .nav-inner::-webkit-scrollbar{display:none}
+  .brand{font-family:var(--serif);font-weight:bold;color:var(--navy);white-space:nowrap;font-size:15px}
+  .nav-links{display:flex;gap:4px;white-space:nowrap}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:13px;padding:6px 12px;border-radius:999px;transition:all .2s}
+  .nav-links a:hover{color:var(--navy)}
+  .nav-links a.active{background:var(--navy);color:#fff}
+
+  /* HERO */
+  .hero{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 70%,#173a7a 100%);color:#fff;padding:96px 0 88px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-140px;top:-140px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(30,158,138,.35),transparent 65%)}
+  .hero::before{content:"";position:absolute;right:60px;bottom:-180px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(200,162,74,.18),transparent 65%)}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#8fd8cb;border:1px solid rgba(143,216,203,.4);padding:7px 16px;border-radius:999px;margin-bottom:28px}
+  .hero h1{font-family:var(--serif);font-size:clamp(32px,5.4vw,56px);line-height:1.12;font-weight:normal;max-width:800px;position:relative;z-index:2}
+  .hero h1 em{font-style:normal;color:#8fd8cb}
+  .hero .sub{margin-top:26px;max-width:640px;color:#c7d2ea;font-size:17px;position:relative;z-index:2}
+  .hero .meta{margin-top:36px;display:flex;flex-wrap:wrap;gap:10px;position:relative;z-index:2}
+  .hero .meta span{font-size:12.5px;color:#aab8d8;border:1px solid rgba(255,255,255,.18);padding:6px 14px;border-radius:999px}
+  .scroll-cue{margin-top:52px;display:inline-flex;align-items:center;gap:10px;color:#8fd8cb;text-decoration:none;font-size:14px;position:relative;z-index:2}
+  .scroll-cue .dot{width:34px;height:34px;border:1px solid rgba(143,216,203,.5);border-radius:50%;display:flex;align-items:center;justify-content:center;animation:bob 2.2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+  /* SECTIONS */
+  section{padding:84px 0}
+  .sec-label{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);font-weight:600;margin-bottom:14px}
+  .sec-title{font-family:var(--serif);font-size:clamp(26px,3.6vw,38px);line-height:1.2;color:var(--navy);font-weight:normal;max-width:720px}
+  .sec-intro{margin-top:16px;color:var(--muted);max-width:640px;font-size:16px}
+  .alt{background:#fff}
+
+  /* CARDS */
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:48px}
+  .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:48px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px 28px;position:relative;transition:transform .25s ease,box-shadow .25s ease}
+  .card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(11,31,75,.08)}
+  .card .num{font-family:var(--serif);font-size:15px;color:var(--gold);letter-spacing:.1em;margin-bottom:18px}
+  .card h3{font-family:var(--serif);font-size:21px;color:var(--navy);font-weight:normal;line-height:1.3;margin-bottom:14px}
+  .card p{font-size:14.5px;color:var(--muted)}
+  .card .why{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--ink)}
+  .card .why b{color:var(--teal);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.12em;display:block;margin-bottom:6px}
+
+  /* TRANSFORMATION FLOW */
+  .flow{margin-top:52px;display:flex;flex-direction:column;gap:0}
+  .flow-step{display:grid;grid-template-columns:150px 1fr;gap:28px;padding:34px 0;border-top:1px solid var(--line);align-items:start}
+  .flow-step .tag{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;padding-top:6px}
+  .flow-step.f1 .tag{color:#a2564f}
+  .flow-step.f2 .tag{color:var(--gold)}
+  .flow-step.f3 .tag{color:var(--teal)}
+  .flow-step h4{font-family:var(--serif);font-size:22px;font-weight:normal;color:var(--navy);margin-bottom:10px}
+  .flow-step p{color:var(--muted);font-size:15px;max-width:640px}
+  .flow-arrow{text-align:center;color:var(--gold);font-size:22px;line-height:1;padding:2px 0}
+
+  /* BEFORE AFTER */
+  .ba{display:grid;grid-template-columns:1fr 44px 1fr;gap:0;align-items:stretch;margin-top:48px}
+  .ba .pane{border-radius:18px;padding:34px 30px}
+  .ba .pane.before{background:#fff;border:1px solid var(--line)}
+  .ba .pane.after{background:var(--navy);color:#fff}
+  .ba .mid{display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:24px}
+  .pane .lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;font-weight:700}
+  .before .lbl{color:#a2564f}
+  .after .lbl{color:#8fd8cb}
+  .pane .quote{font-family:var(--serif);font-size:17px;line-height:1.55}
+  .before .quote{color:var(--muted)}
+  .after .quote{color:#fff}
+  .pane ul{list-style:none;margin-top:18px}
+  .pane li{font-size:13.5px;padding:6px 0 6px 22px;position:relative}
+  .before li{color:var(--muted)}
+  .after li{color:#c7d2ea}
+  .pane li::before{content:"";position:absolute;left:0;top:13px;width:8px;height:8px;border-radius:50%}
+  .before li::before{background:#d8c9c7}
+  .after li::before{background:var(--teal)}
+
+  /* DIFFERENCE TABLE */
+  .diff{margin-top:48px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+  .diff-row{display:grid;grid-template-columns:190px 1fr 44px 1fr;border-top:1px solid var(--line)}
+  .diff-row:first-child{border-top:none}
+  .diff-row>div{padding:22px 26px}
+  .diff-row .k{background:#fbfaf6;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--navy);display:flex;align-items:center}
+  .diff-row .c{font-size:14.5px;color:var(--muted);display:flex;align-items:center}
+  .diff-row .n{font-size:14.5px;color:var(--ink);font-weight:600;display:flex;align-items:center}
+  .diff-row .arrow{display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px}
+
+  /* HEADLINE OPTIONS */
+  .hl-opt{background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px 28px;margin-top:20px;position:relative;transition:border-color .2s,box-shadow .2s}
+  .hl-opt:hover{border-color:var(--teal);box-shadow:0 14px 34px rgba(11,31,75,.07)}
+  .hl-opt .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  .hl-opt .hl-text{font-family:var(--serif);font-size:18px;line-height:1.5;color:var(--navy);max-width:760px}
+  .hl-opt .idea{margin-top:14px;font-size:13px;color:var(--teal);font-weight:600;letter-spacing:.04em}
+  .hl-opt .why{margin-top:6px;font-size:14px;color:var(--muted);max-width:720px}
+  .hl-opt.rec{border:2px solid var(--teal)}
+  .rec-badge{display:inline-block;background:var(--teal);color:#fff;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 12px;border-radius:999px;margin-bottom:14px}
+
+  /* COPY BUTTONS */
+  .copy-btn{flex-shrink:0;background:var(--navy);color:#fff;border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:999px;cursor:pointer;transition:all .2s;letter-spacing:.03em}
+  .copy-btn:hover{background:var(--navy-2);transform:translateY(-1px)}
+  .copy-btn.copied{background:var(--teal)}
+
+  /* LINKEDIN PREVIEW */
+  .li-preview{background:#fff;border:1px solid var(--line);border-radius:18px;margin-top:44px;overflow:hidden}
+  .li-head{display:flex;gap:14px;padding:22px 28px;border-bottom:1px solid var(--line);align-items:center}
+  .li-avatar{width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;flex-shrink:0}
+  .li-head .n{font-weight:700;font-size:15px;color:var(--ink)}
+  .li-head .h{font-size:12.5px;color:var(--muted)}
+  .li-body{padding:30px 32px;white-space:pre-line;font-size:15px;line-height:1.75;color:var(--ink)}
+  .li-foot{padding:18px 28px;border-top:1px solid var(--line);background:#fbfaf6;display:flex;justify-content:flex-end}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:48px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px 16px;text-align:center}
+  .stat .v{font-family:var(--serif);font-size:clamp(26px,3.4vw,40px);color:var(--navy)}
+  .stat .v sup{font-size:.5em;color:var(--teal)}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.04em}
+
+  /* POST PREVIEW */
+  .post-preview{background:#fff;border:1px solid var(--line);border-radius:18px;margin-top:44px;overflow:hidden}
+  .post-body{padding:32px;white-space:pre-line;font-size:15px;line-height:1.75}
+  .post-foot{padding:18px 28px;border-top:1px solid var(--line);background:#fbfaf6;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .post-foot .hint{font-size:12.5px;color:var(--muted)}
+
+  /* TERRITORIES */
+  .terr{display:flex;flex-wrap:wrap;gap:12px;margin-top:40px}
+  .terr span{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 20px;font-size:13.5px;color:var(--ink);transition:all .2s}
+  .terr span:hover{border-color:var(--teal);color:var(--navy)}
+
+  /* SHIFT */
+  .shift{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:48px}
+  .shift .s-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px 26px}
+  .shift .s-card .from{font-size:14px;color:var(--muted);text-decoration:line-through;text-decoration-color:#d8c9c7}
+  .shift .s-card .arr{color:var(--gold);font-size:20px;margin:12px 0}
+  .shift .s-card .to{font-family:var(--serif);font-size:18px;color:var(--navy);line-height:1.4}
+
+  /* BANNER */
+  .banner-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:48px;align-items:start}
+  .banner-mock{aspect-ratio:4/1;border-radius:14px;position:relative;overflow:hidden;background:linear-gradient(120deg,#0b1f4b 0%,#12295e 55%,#173a7a 100%);display:flex;align-items:center;padding:0 6%}
+  .banner-mock .bm-copy{position:relative;z-index:2}
+  .banner-mock .bm-1{font-family:var(--serif);color:#fff;font-size:clamp(17px,2.6vw,27px);line-height:1.2}
+  .banner-mock .bm-2{color:#8fd8cb;font-size:clamp(9px,1.15vw,12.5px);margin-top:8px;letter-spacing:.02em}
+  .banner-mock .bm-3{color:#c7d2ea;font-size:clamp(8px,1vw,11px);margin-top:6px}
+  .banner-mock .bm-arrow{position:absolute;right:6%;top:50%;transform:translateY(-50%);font-size:clamp(34px,6vw,64px);color:rgba(143,216,203,.85);font-family:var(--sans)}
+  .banner-mock .bm-glow{position:absolute;right:-8%;top:-40%;width:60%;height:180%;background:radial-gradient(circle,rgba(30,158,138,.3),transparent 60%)}
+  .banner-note{font-size:13px;color:var(--muted);margin-top:12px}
+  .banner-copy-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px}
+  .banner-copy-card h4{font-family:var(--serif);font-weight:normal;color:var(--navy);font-size:20px;margin-bottom:16px}
+  .banner-copy-card .lines{white-space:pre-line;font-size:15px;line-height:1.8;border-left:3px solid var(--teal);padding-left:20px;color:var(--ink)}
+  .banner-copy-card .actions{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
+
+  /* GIFT */
+  .gift-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+  .gift{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px 24px;display:flex;gap:16px;align-items:flex-start}
+  .gift .g-ic{width:38px;height:38px;border-radius:10px;background:var(--teal-soft);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+  .gift .g-t{font-weight:700;font-size:14.5px;color:var(--navy)}
+  .gift .g-d{font-size:13px;color:var(--muted);margin-top:4px}
+
+  /* CTA */
+  .cta{background:linear-gradient(160deg,var(--navy),#173a7a);border-radius:26px;color:#fff;padding:64px 56px;margin-top:20px;position:relative;overflow:hidden}
+  .cta::after{content:"";position:absolute;right:-120px;bottom:-160px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(30,158,138,.3),transparent 65%)}
+  .cta h2{font-family:var(--serif);font-weight:normal;font-size:clamp(26px,3.6vw,38px);line-height:1.25;max-width:640px;position:relative;z-index:2}
+  .cta p{margin-top:18px;color:#c7d2ea;max-width:560px;font-size:16px;position:relative;z-index:2}
+  .cta .q{margin-top:30px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:26px 30px;max-width:640px;position:relative;z-index:2}
+  .cta .q .qt{font-family:var(--serif);font-size:20px;margin-bottom:12px}
+  .cta .q .qo{font-size:14.5px;color:#c7d2ea;padding:4px 0}
+  .cta .q .qo b{color:#8fd8cb;font-weight:600}
+
+  /* SOURCES */
+  .sources{margin-top:44px;border-top:1px solid var(--line);padding-top:36px}
+  .sources h4{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+  .src{display:grid;grid-template-columns:220px 1fr;gap:18px;padding:12px 0;border-top:1px dashed var(--line);font-size:13.5px}
+  .src .s-name{color:var(--navy);font-weight:600}
+  .src .s-what{color:var(--muted)}
+
+  footer{padding:56px 0 72px;text-align:center;color:var(--muted);font-size:13px}
+  footer .f-line{font-family:var(--serif);font-size:16px;color:var(--navy);max-width:520px;margin:0 auto 14px;line-height:1.5}
+
+  /* REVEAL */
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+  .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}
+
+  @media (max-width:900px){
+    .grid-3,.shift,.gift-grid{grid-template-columns:1fr 1fr}
+    .stats{grid-template-columns:repeat(3,1fr)}
+    .banner-grid{grid-template-columns:1fr}
+    .diff-row{grid-template-columns:1fr}
+    .diff-row .arrow{display:none}
+    .diff-row .k{padding-bottom:4px}
+  }
+  @media (max-width:640px){
+    .grid-3,.grid-2,.shift,.gift-grid{grid-template-columns:1fr}
+    .ba{grid-template-columns:1fr}
+    .ba .mid{padding:10px 0}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .flow-step{grid-template-columns:1fr;gap:8px}
+    .src{grid-template-columns:1fr;gap:4px}
+    .cta{padding:44px 28px}
+    section{padding:64px 0}
+    .hero{padding:72px 0 64px}
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="brand">Adam Scrivner: Profile Audit</div>
+    <div class="nav-links">
+      <a href="#opportunities" data-sec="opportunities">Opportunities</a>
+      <a href="#transformation" data-sec="transformation">Transformation</a>
+      <a href="#difference" data-sec="difference">Difference</a>
+      <a href="#headline" data-sec="headline">Headline</a>
+      <a href="#about" data-sec="about">About</a>
+      <a href="#content" data-sec="content">Content</a>
+      <a href="#banner" data-sec="banner">Banner</a>
+      <a href="#gift" data-sec="gift">Your Gift</a>
+    </div>
+  </div>
+</nav>
+
+<!-- SCREEN 1: HOOK -->
+<header class="hero">
+  <div class="wrap">
+    <span class="kicker">A private LinkedIn audit, prepared for Adam Scrivner</span>
+    <h1>Your business has stronger proof than your LinkedIn currently <em>communicates.</em></h1>
+    <p class="sub">I studied your LinkedIn profile, your website, your public posts, and your app presence the way a case manager or workforce director would. I found the gaps. Then I rebuilt the parts that matter, so you can use them today.</p>
+    <div class="meta">
+      <span>LinkedIn profile and posts</span>
+      <span>freeandforward.com</span>
+      <span>App store presence</span>
+      <span>Public activity</span>
+    </div>
+    <a class="scroll-cue" href="#opportunities"><span class="dot">&darr;</span> See the three findings</a>
+  </div>
+</header>
+
+<!-- SCREEN 2: THREE OPPORTUNITIES -->
+<section id="opportunities">
+  <div class="wrap">
+    <div class="sec-label reveal">What I found</div>
+    <h2 class="sec-title reveal">Three places your profile is hiding your own strength</h2>
+    <p class="sec-intro reveal">None of these require new achievements. They are things you already did, already built, or already lived. They are simply not visible where a first-time visitor looks.</p>
+    <div class="grid-3">
+      <div class="card reveal d1">
+        <div class="num">FINDING 01</div>
+        <h3>Your lived experience never reaches your first screen</h3>
+        <p>Your website opens with your story: walking out with a stack of paperwork and no idea where to start. Your LinkedIn mentions "I have walked this path myself" inside a post. Your headline and About opening never say it.</p>
+        <div class="why"><b>Why it matters</b>In reentry, trust decides adoption. A founder who has been there is a different category of builder than a vendor. That difference belongs in the first two lines.</div>
+      </div>
+      <div class="card reveal d2">
+        <div class="num">FINDING 02</div>
+        <h3>Your headline lists features, not the problem you solve</h3>
+        <p>Goal tracking, job matching, document storage: all accurate, all real. But the actual story is the first ninety days, and what happens when one piece of it is missed. That story never appears in your headline.</p>
+        <div class="why"><b>Why it matters</b>A case manager scrolling for thirty seconds should be able to answer: what is this, and who is it for? Right now they get a feature list instead.</div>
+      </div>
+      <div class="card reveal d3">
+        <div class="num">FINDING 03</div>
+        <h3>Your original research never left one Experience entry</h3>
+        <p>You classified 557 real job listings across 55 US markets: 59% open, 17% needing review, 7% barred by law. Today it sits inside a single job description. It is not in your About, your headline, or any post.</p>
+        <div class="why"><b>Why it matters</b>Nobody else in your category has measured this. It positions you as the founder who studies the market instead of guessing at it.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 3: TRANSFORMATION -->
+<section id="transformation" class="alt">
+  <div class="wrap">
+    <div class="sec-label reveal">The transformation</div>
+    <h2 class="sec-title reveal">Current, what was missed, and the rebuilt version</h2>
+    <div class="flow">
+      <div class="flow-step f1 reveal">
+        <div class="tag">Current</div>
+        <div>
+          <h4>A founder title plus a feature list</h4>
+          <p>"Founder, Free and Forward. Reentry app and tools in English and Español. Goal tracking, job matching, and document storage for people coming home..." Accurate, but it describes parts of the product, not the stakes.</p>
+        </div>
+      </div>
+      <div class="flow-arrow reveal">&darr;</div>
+      <div class="flow-step f2 reveal">
+        <div class="tag">What was missed</div>
+        <div>
+          <h4>The three things that actually persuade</h4>
+          <p>The first ninety days as the organizing problem. Your own story as the reason to trust you. Your 557-listing study as the reason to believe the job matching is real.</p>
+        </div>
+      </div>
+      <div class="flow-arrow reveal">&darr;</div>
+      <div class="flow-step f3 reveal">
+        <div class="tag">New</div>
+        <div>
+          <h4>Problem, proof, and founder story in one line</h4>
+          <p>"I build Free and Forward, the reentry app I wish existed when I came home. 27 steps, documents, jobs, and reminders for the first 90 days. English and Español."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 4: DIFFERENCE -->
+<section id="difference">
+  <div class="wrap">
+    <div class="sec-label reveal">Your profile, repositioned</div>
+    <h2 class="sec-title reveal">The difference, section by section</h2>
+    <div class="diff reveal">
+      <div class="diff-row"><div class="k">Headline</div><div class="c">Feature list</div><div class="arrow">&rarr;</div><div class="n">Problem, proof, and founder story in one line</div></div>
+      <div class="diff-row"><div class="k">Positioning</div><div class="c">An app for reentry tasks</div><div class="arrow">&rarr;</div><div class="n">The first ninety days, in order, in one place</div></div>
+      <div class="diff-row"><div class="k">About</div><div class="c">Strong content in one dense block</div><div class="arrow">&rarr;</div><div class="n">Same substance, restructured so the first two lines earn the click</div></div>
+      <div class="diff-row"><div class="k">Proof</div><div class="c">Locked inside one Experience entry</div><div class="arrow">&rarr;</div><div class="n">Moved into the headline, the About, and the first post</div></div>
+      <div class="diff-row"><div class="k">Message</div><div class="c">What the app has</div><div class="arrow">&rarr;</div><div class="n">What the person coming home gets</div></div>
+      <div class="diff-row"><div class="k">CTA</div><div class="c">Offer mentioned late and once</div><div class="arrow">&rarr;</div><div class="n">20 free codes for organizations, stated plainly, twice</div></div>
+      <div class="diff-row"><div class="k">Banner</div><div class="c">Carries the mark, not the message</div><div class="arrow">&rarr;</div><div class="n">One-line value proposition, with proof underneath</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 5: HEADLINES -->
+<section id="headline" class="alt">
+  <div class="wrap">
+    <div class="sec-label reveal">Your new headline</div>
+    <h2 class="sec-title reveal">Five options, each under the character limit</h2>
+    <p class="sec-intro reveal">Every option is built from your actual business, your actual proof, and your actual voice. Copy any of them directly into LinkedIn.</p>
+
+    <div class="hl-opt rec reveal d1">
+      <span class="rec-badge">Recommended direction</span>
+      <div class="top">
+        <div>
+          <div class="hl-text" id="hl1">I build Free and Forward, the reentry app I wish existed when I came home. 27 steps, documents, jobs, and reminders for the first 90 days. English and Español.</div>
+          <div class="idea">Idea: lead with the founder story, then the product.</div>
+          <div class="why">Why it works: your lived experience is your strongest differentiator, and this is the only option that puts it in the first line while keeping the offer fully clear. It also matches the story your website already tells.</div>
+        </div>
+        <button class="copy-btn" data-target="hl1">Copy</button>
+      </div>
+    </div>
+
+    <div class="hl-opt reveal d2">
+      <div class="top">
+        <div>
+          <div class="hl-text" id="hl2">Helping people survive the first 90 days after prison: one app for the 27 steps, documents, court dates, and job search. In English and Español. Free to start.</div>
+          <div class="idea">Idea: lead with the problem and the outcome.</div>
+          <div class="why">Why it works: "survive the first 90 days" names the stakes immediately, and "free to start" answers the first question anyone in reentry asks.</div>
+        </div>
+        <button class="copy-btn" data-target="hl2">Copy</button>
+      </div>
+    </div>
+
+    <div class="hl-opt reveal d3">
+      <div class="top">
+        <div>
+          <div class="hl-text" id="hl3">Reentry app for people coming home and the case managers preparing them. Checklist, document vault, fair-chance job matching. Nothing shared with any agency. English and Español.</div>
+          <div class="idea">Idea: speak to both buyers at once.</div>
+          <div class="why">Why it works: names the returning citizen and the professional who serves them, and the privacy line answers the biggest objection your buyer has.</div>
+        </div>
+        <button class="copy-btn" data-target="hl3">Copy</button>
+      </div>
+    </div>
+
+    <div class="hl-opt reveal d4">
+      <div class="top">
+        <div>
+          <div class="hl-text" id="hl4">Free reentry tools with nothing shared with any agency. Goals, documents, jobs, and reminders for the first 90 days home. Built by someone who has been there.</div>
+          <div class="idea">Idea: lead with the trust position.</div>
+          <div class="why">Why it works: "nothing shared with any agency" is a claim almost nobody in your space can make, and "been there" closes with credibility.</div>
+        </div>
+        <button class="copy-btn" data-target="hl4">Copy</button>
+      </div>
+    </div>
+
+    <div class="hl-opt reveal d5">
+      <div class="top">
+        <div>
+          <div class="hl-text" id="hl5">Founder of Free and Forward. We classified 557 job listings across 55 markets to map fair-chance hiring honestly. Reentry app in English and Español. Free to start.</div>
+          <div class="idea">Idea: lead with your original research.</div>
+          <div class="why">Why it works: the 557-listing study is proof nobody else has, and proof-first headlines attract organizations, journalists, and partners.</div>
+        </div>
+        <button class="copy-btn" data-target="hl5">Copy</button>
+      </div>
+    </div>
+
+    <div class="ba reveal">
+      <div class="pane before">
+        <div class="lbl">Current headline</div>
+        <div class="quote">Founder, Free and Forward. Reentry app and tools in English and Español. Goal tracking, job matching, and document storage for people coming home, and for the families helping them get ready.</div>
+        <ul>
+          <li>Describes product parts, not the problem</li>
+          <li>No mention of your story</li>
+          <li>No proof</li>
+        </ul>
+      </div>
+      <div class="mid">&rarr;</div>
+      <div class="pane after">
+        <div class="lbl">Recommended</div>
+        <div class="quote">I build Free and Forward, the reentry app I wish existed when I came home. 27 steps, documents, jobs, and reminders for the first 90 days. English and Español.</div>
+        <ul>
+          <li>Founder story in the first line</li>
+          <li>The first ninety days as the frame</li>
+          <li>Offer and languages still clear</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 6: ABOUT -->
+<section id="about">
+  <div class="wrap">
+    <div class="sec-label reveal">Your new About</div>
+    <h2 class="sec-title reveal">Same substance. Rebuilt so it earns attention.</h2>
+    <p class="sec-intro reveal">Your current About has real content, and most of it stays. Three things change: your story moves to the very top, your research gets its own moment, and the offer to organizations appears twice instead of once.</p>
+    <div class="li-preview reveal">
+      <div class="li-head">
+        <div class="li-avatar">A</div>
+        <div>
+          <div class="n">Adam Scrivner</div>
+          <div class="h">Founder &amp; CEO at Free and Forward</div>
+        </div>
+      </div>
+      <div class="li-body" id="aboutText">I came home from prison with a stack of paperwork and no idea where to start. I missed things that mattered, not because I did not care, but because it all landed at once with no system for any of it.
+
+So I built the thing I needed.
+
+Free and Forward puts the entire first ninety days in one place, in the order it actually happens:
+
+• A 27-step checklist covering ID, housing, health coverage, legal obligations, and work, each with a due date and a reminder before the deadline
+• Goal setting with tracked progress. Free permanently. No card required.
+• A document vault for IDs, certificates, and release paperwork, encrypted on your own phone
+• A resume builder that handles work history gaps honestly
+• Job matching weighted toward employers who actually hire people with records
+• One calendar for court dates, check-ins, appointments, and deadlines
+• An application tracker, so nothing gets lost after you hit send
+
+WHY THE FREE TIER STAYS FREE
+Someone walking out with forty dollars and a bus ticket should not hit a paywall before setting a single goal. The paid tiers add AI resume writing and job matching for people who want them.
+
+NOTHING SHARED WITH ANY AGENCY
+Supervision-adjacent apps fail because people assume surveillance. There is no agency-facing view. No location, no check-in verification, no silent reporting. Adoption is the whole game, and trust is the price of entry.
+
+ENGLISH AND ESPAÑOL, NOT A TRANSLATION LAYER
+The product, the site, and support are built in both languages, because reentry paperwork does not wait for a translation.
+
+BUILT FOR FAMILIES TOO
+Parents, partners, and friends can set someone up before release day, so the first week home is spent moving forward instead of starting from zero.
+
+THE WORK BEHIND IT
+Before committing to a national job data source, we tested coverage across 55 major US markets and classified 557 real listings. Result: 59% open, 17% needing review, 7% barred by law. Our evidence page cites peer-reviewed work only.
+
+Live on the web, the Apple App Store, and Google Play. Organizations get 20 free codes, each one lifetime advanced access for the people you serve. No cost to you, no card needed from them.
+
+WHO I WANT TO HEAR FROM
+Case managers, parole and probation officers, reentry coordinators, program directors, chaplains, and workforce boards. Tell me what the people you work with actually run into, and where a tool like this helps or gets in the way. That feedback decides what we build next.
+
+If you are coming home soon, or someone you love is, it is free to start.
+
+freeandforward.com | English and Español</div>
+      <div class="li-foot"><button class="copy-btn" data-target="aboutText">Copy About</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 7: CONTENT -->
+<section id="content" class="alt">
+  <div class="wrap">
+    <div class="sec-label reveal">Your content opportunity</div>
+    <h2 class="sec-title reveal">You have six posts waiting that almost write themselves</h2>
+    <div class="terr reveal">
+      <span>Your own first week home, told plainly</span>
+      <span>The 557-listing study, number by number</span>
+      <span>Why supervision-adjacent apps keep failing</span>
+      <span>Building in two languages from day one</span>
+      <span>The $55-per-user problem you engineered around</span>
+      <span>What families can do before release day</span>
+    </div>
+    <p class="sec-intro reveal" style="margin-top:36px">The strongest of these is the study. Original data earns trust from case managers, workforce boards, and journalists in a way product posts cannot. Here is the first post, ready to publish:</p>
+    <div class="post-preview reveal">
+      <div class="li-head">
+        <div class="li-avatar">A</div>
+        <div>
+          <div class="n">Adam Scrivner</div>
+          <div class="h">Founder &amp; CEO at Free and Forward</div>
+        </div>
+      </div>
+      <div class="post-body" id="postText">We classified 557 real job listings across 55 US markets.
+
+One question: how much of the job market is actually open to someone with a record?
+
+59% were open.
+17% needed a closer look before applying.
+7% were barred by law.
+
+Before we wired a national job data source into Free and Forward, I wanted to know what our users would actually face. Not what a vendor says in a sales call. Real listings, read one by one.
+
+Three things stood out:
+
+1. Most postings never mention a record at all. The written barrier is smaller than people assume.
+
+2. The real friction sits later: the background check, the application question, and the gap on the resume.
+
+3. Employers who do hire fairly rarely say so in the posting. You find them by looking, not by searching.
+
+That is why our resume builder treats gaps honestly instead of hiding them, and why job matching in the app is weighted toward employers who actually hire people coming home.
+
+If you run a reentry program or sit on a workforce board, message me and I will send you the full breakdown.
+
+#reentry #fairchancehiring #secondchance</div>
+      <div class="post-foot">
+        <span class="hint">Written in your voice, from your real numbers. Copy it, read it once out loud, adjust anything that does not sound like you.</span>
+        <button class="copy-btn" data-target="postText">Copy Post</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section>
+  <div class="wrap">
+    <div class="sec-label reveal">The proof worth repeating</div>
+    <h2 class="sec-title reveal">Numbers your profile should be showing, not storing</h2>
+    <div class="stats reveal">
+      <div class="stat"><div class="v"><span data-count="557">0</span></div><div class="l">Real listings classified</div></div>
+      <div class="stat"><div class="v"><span data-count="55">0</span></div><div class="l">US markets tested</div></div>
+      <div class="stat"><div class="v"><span data-count="59">0</span><sup>%</sup></div><div class="l">Open to people with records</div></div>
+      <div class="stat"><div class="v"><span data-count="17">0</span><sup>%</sup></div><div class="l">Needed a closer look</div></div>
+      <div class="stat"><div class="v"><span data-count="7">0</span><sup>%</sup></div><div class="l">Barred by law</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 8: MESSAGE SHIFT -->
+<section class="alt">
+  <div class="wrap">
+    <div class="sec-label reveal">Your profile message</div>
+    <h2 class="sec-title reveal">The shift in one view</h2>
+    <div class="shift">
+      <div class="s-card reveal d1">
+        <div class="from">Feature-first: goal tracking, job matching, document storage</div>
+        <div class="arr">&darr;</div>
+        <div class="to">First-90-days-first: one place, in the order it actually happens</div>
+      </div>
+      <div class="s-card reveal d2">
+        <div class="from">Founder story buried in an old post</div>
+        <div class="arr">&darr;</div>
+        <div class="to">Founder story in the first two lines of your profile</div>
+      </div>
+      <div class="s-card reveal d3">
+        <div class="from">Proof locked in one Experience entry</div>
+        <div class="arr">&darr;</div>
+        <div class="to">Proof across the headline, About, and pinned content</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 9: BANNER -->
+<section id="banner">
+  <div class="wrap">
+    <div class="sec-label reveal">Your banner</div>
+    <h2 class="sec-title reveal">The banner should say the one thing your profile needs to say</h2>
+    <p class="sec-intro reveal">Today your banner carries the mark but not the message. The strongest available line is already yours, from your own website. This is the direction:</p>
+    <div class="banner-grid">
+      <div class="reveal d1">
+        <div class="banner-mock">
+          <div class="bm-glow"></div>
+          <div class="bm-copy">
+            <div class="bm-1">Reentry, in one app.</div>
+            <div class="bm-2">The first ninety days decide everything.</div>
+            <div class="bm-3">27 steps, documents, jobs, and reminders. English and Español. Free to start.</div>
+          </div>
+          <div class="bm-arrow">&rarr;</div>
+        </div>
+        <p class="banner-note">Concept preview, built to LinkedIn's 1584 x 396 format. Final artwork follows your brand colors.</p>
+      </div>
+      <div class="banner-copy-card reveal d2">
+        <h4>Exact banner copy</h4>
+        <div class="lines" id="bannerText">Reentry, in one app.
+The first ninety days decide everything.
+27 steps, documents, jobs, and reminders. English and Español. Free to start.</div>
+        <div class="actions">
+          <button class="copy-btn" data-target="bannerText">Copy Banner Copy</button>
+        </div>
+        <p class="banner-note" style="margin-top:18px">Why this works: the top line is your category claim, the second line is your website's own framing, and the third line carries the proof a skeptical professional needs. It reads in under three seconds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 10: GIFT -->
+<section id="gift" class="alt">
+  <div class="wrap">
+    <div class="sec-label reveal">Your free gift</div>
+    <h2 class="sec-title reveal">Everything on this page is yours to use right now</h2>
+    <div class="gift-grid">
+      <div class="gift reveal d1"><div class="g-ic">&#10003;</div><div><div class="g-t">5 headline options</div><div class="g-d">One recommended direction, all copyable, all under the limit.</div></div></div>
+      <div class="gift reveal d2"><div class="g-ic">&#10003;</div><div><div class="g-t">Complete About rewrite</div><div class="g-d">Paste-ready, built only from your real business and proof.</div></div></div>
+      <div class="gift reveal d3"><div class="g-ic">&#10003;</div><div><div class="g-t">First post, written</div><div class="g-d">Your 557-listing study, shaped into a post that builds authority.</div></div></div>
+      <div class="gift reveal d1"><div class="g-ic">&#10003;</div><div><div class="g-t">Positioning shift</div><div class="g-d">Feature-first to first-90-days-first, applied across the profile.</div></div></div>
+      <div class="gift reveal d2"><div class="g-ic">&#10003;</div><div><div class="g-t">Banner message</div><div class="g-d">Exact copy plus a visual direction, ready for final artwork.</div></div></div>
+      <div class="gift reveal d3"><div class="g-ic">&#10003;</div><div><div class="g-t">Content territories</div><div class="g-d">Six topics only you can own, mapped from what you already did.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL SCREEN: CTA -->
+<section>
+  <div class="wrap">
+    <div class="cta reveal">
+      <h2>One last piece, and I do not want to guess it.</h2>
+      <p>I was already working on the final banner artwork for you. The copy, the layout, and the direction are done. The only thing left is the part that should be yours.</p>
+      <div class="q">
+        <div class="qt">Do you already have brand colors you want me to use?</div>
+        <div class="qo"><b>If yes:</b> send them over, hex codes or a logo, anything works.</div>
+        <div class="qo"><b>If not:</b> just tell me light or dark, or send any colors you personally like, and I will finish the banner around them.</div>
+      </div>
+    </div>
+    <div class="sources reveal">
+      <h4>Sources used for this audit</h4>
+      <div class="src"><div class="s-name">Your LinkedIn profile export</div><div class="s-what">Headline, About, Experience, skills, certifications. Provided directly.</div></div>
+      <div class="src"><div class="s-name">Your LinkedIn profile screenshots</div><div class="s-what">Recent posts, activity, photos, and the organization offer of 20 free codes. Provided directly.</div></div>
+      <div class="src"><div class="s-name">freeandforward.com</div><div class="s-what">Tagline "the first ninety days decide everything," tier structure, privacy commitments, and your founder quote.</div></div>
+      <div class="src"><div class="s-name">Free and Forward public posts</div><div class="s-what">The 27-step checklist framing, launch announcements, and flyer distribution to reentry centers.</div></div>
+      <div class="src"><div class="s-name">TikTok and Instagram, @freeandforwardapp</div><div class="s-what">Live status confirmation and audience language: returning citizens and the people who love them.</div></div>
+      <div class="src"><div class="s-name">Your public group comment, September 2026</div><div class="s-what">Your own statement that the company is registered on SAM.gov. Included as self-reported.</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="f-line">I keep seeing businesses with real proof and real stories that their profiles do not fully tell. Yours was worth the deep look.</p>
+    <p>Prepared for Adam Scrivner &middot; September 2026 &middot; This page works offline. Nothing you copy here leaves your device.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Progress bar
+  var prog=document.getElementById('progress');
+  window.addEventListener('scroll',function(){
+    var h=document.documentElement;
+    var pct=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;
+    prog.style.width=pct+'%';
+  },{passive:true});
+
+  // Reveal on scroll
+  var revEls=document.querySelectorAll('.reveal');
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}
+    });
+  },{threshold:.12});
+  revEls.forEach(function(el){io.observe(el);});
+
+  // Counters
+  var counters=document.querySelectorAll('[data-count]');
+  var cio=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting)return;
+      var el=e.target,end=parseInt(el.getAttribute('data-count'),10),t0=null;
+      function step(ts){
+        if(!t0)t0=ts;
+        var p=Math.min((ts-t0)/900,1);
+        el.textContent=Math.round(end*(1-Math.pow(1-p,3)));
+        if(p<1)requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+      cio.unobserve(el);
+    });
+  },{threshold:.5});
+  counters.forEach(function(el){cio.observe(el);});
+
+  // Scroll spy
+  var links=document.querySelectorAll('.nav-links a');
+  var secs=[];
+  links.forEach(function(a){var s=document.getElementById(a.getAttribute('data-sec'));if(s)secs.push({a:a,s:s});});
+  var sio=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(a){a.classList.remove('active');});
+        var m=secs.find(function(x){return x.s===e.target;});
+        if(m)m.a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-40% 0px -55% 0px'});
+  secs.forEach(function(x){sio.observe(x.s);});
+
+  // Copy buttons
+  function copyText(text,btn){
+    function done(){
+      var orig=btn.getAttribute('data-label')||btn.textContent;
+      btn.setAttribute('data-label',orig);
+      btn.textContent='Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(function(){btn.textContent=btn.getAttribute('data-label');btn.classList.remove('copied');},1800);
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){fallback();});
+    }else{fallback();}
+    function fallback(){
+      var ta=document.createElement('textarea');
+      ta.value=text;
+      ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      try{document.execCommand('copy');}catch(err){}
+      document.body.removeChild(ta);
+      done();
+    }
+  }
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var target=document.getElementById(btn.getAttribute('data-target'));
+      if(target)copyText(target.innerText,btn);
+    });
+  });
+})();
+</script>
+</body>
+</html>
